@@ -1,0 +1,38 @@
+.drone-list {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 200px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  z-index: 10; /* فوق الخريطة */
+  font-family: Arial, sans-serif;
+}
+
+.drone-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.drone-list li {
+  padding: 5px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.drone-list li.green {
+  color: green;
+}
+
+.drone-list li.red {
+  color: red;
+}
+
+.drone-list li:hover {
+  background-color: #f0f0f0;
+}
