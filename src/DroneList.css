@@ -25,14 +25,21 @@
   border-bottom: 1px solid #eee;
 }
 
-.drone-list li.green {
+.drone-name {
+  font-weight: bold;
+}
+
+.drone-reg {
+  font-size: 0.85em;
+  color: gray;
+  font-style: italic;
+}
+
+/* الألوان حسب حالة الطيران */
+.green {
   color: green;
 }
 
-.drone-list li.red {
+.red {
   color: red;
-}
-
-.drone-list li:hover {
-  background-color: #f0f0f0;
 }

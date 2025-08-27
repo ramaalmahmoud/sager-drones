@@ -45,100 +45,149 @@ export default function MapView() {
 
   return <div ref={mapContainer} style={{ width: "100%", height: "500px" }} />;
 }*/
-import React, { useEffect, useRef } from "react";
+/*import React, { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useDroneStore } from "./store";
-
-export default function MapView({ selectedDrone }) {
+export default function MapView() {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const drones = useDroneStore((state) => state.drones);
-  const pathsRef = useRef({}); // لتخزين مسارات الطائرات
 
+  const { drones } = useDroneStore();
+
+  // 1. إنشاء الخريطة مرة وحدة
   useEffect(() => {
     if (map.current) return;
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: "https://demotiles.maplibre.org/style.json",
-      center: [31.9487, 35.9313],
-      zoom: 8,
+      center: [35.9, 31.95], // وسط عمان مثلاً
+      zoom: 6,
+    });
+
+    // أضف مصدر + طبقة أول مرة فقط
+    map.current.on("load", () => {
+      map.current.addSource("drones", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+
+      map.current.addLayer({
+        id: "drones-layer",
+        type: "circle",
+        source: "drones",
+        paint: {
+          "circle-radius": 6,
+          "circle-color": [
+            "case",
+            ["==", ["slice", ["get", "registration"], 3, 4], "B"], // بعد الـ "-"
+            "#00ff00", // أخضر = مسموح
+            "#ff0000", // أحمر = غير مسموح
+          ],
+        },
+      });
     });
   }, []);
 
-  // رسم الطائرات والمسارات
+  // 2. كل ما يتغير drones → حدّث المصدر
   useEffect(() => {
     if (!map.current) return;
+    if (!map.current.getSource("drones")) return;
 
-    drones.forEach((drone) => {
-      const id = drone.properties.serial;
-      const coord = drone.geometry.coordinates;
+    const featureCollection = {
+      type: "FeatureCollection",
+      features: drones,
+    };
 
-      // حفظ المسار
-      if (!pathsRef.current[id]) pathsRef.current[id] = [];
-      pathsRef.current[id].push(coord);
-
-      // إزالة مصدر إذا موجود
-      if (map.current.getSource(`drone-${id}`)) {
-        map.current.getSource(`drone-${id}`).setData({
-          type: "Feature",
-          geometry: { type: "Point", coordinates: coord },
-        });
-      } else {
-        map.current.addSource(`drone-${id}`, {
-          type: "geojson",
-          data: {
-            type: "Feature",
-            geometry: { type: "Point", coordinates: coord },
-          },
-        });
-        map.current.addLayer({
-          id: `drone-${id}-layer`,
-          type: "symbol",
-          source: `drone-${id}`,
-          layout: {
-            "icon-image": "rocket-15", // أي أيقونة صغيرة
-            "icon-rotate": drone.properties.yaw, // اتجاه الطائرة
-            "icon-size": 1.5,
-          },
-        });
-      }
-
-      // رسم المسار
-      const pathSourceId = `path-${id}`;
-      if (map.current.getSource(pathSourceId)) {
-        map.current.getSource(pathSourceId).setData({
-          type: "Feature",
-          geometry: { type: "LineString", coordinates: pathsRef.current[id] },
-        });
-      } else {
-        map.current.addSource(pathSourceId, {
-          type: "geojson",
-          data: {
-            type: "Feature",
-            geometry: { type: "LineString", coordinates: pathsRef.current[id] },
-          },
-        });
-        map.current.addLayer({
-          id: `${pathSourceId}-layer`,
-          type: "line",
-          source: pathSourceId,
-          paint: { "line-color": "#ff0000", "line-width": 2 },
-        });
-      }
-    });
+    map.current.getSource("drones").setData(featureCollection);
+    console.log("✅ Updated drones on map:", featureCollection);
   }, [drones]);
 
-  // التكبير/تحريك للخريطة عند اختيار طائرة من القائمة
-  useEffect(() => {
-    if (selectedDrone && map.current) {
-      map.current.flyTo({
-        center: selectedDrone.geometry.coordinates,
-        zoom: 15,
-      });
-    }
-  }, [selectedDrone]);
+  return <div ref={mapContainer} style={{ width: "100%", height: "100vh" }} />;
+}*/
+import React, { useEffect, useRef } from "react";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { useDroneStore } from "./store";
 
-  return <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />;
+export default function MapView() {
+  const mapContainer = useRef(null);
+  const map = useRef(null);
+
+  // ناخذ الـ GeoJSON الجاهز من Zustand
+  const pointsFC = useDroneStore((s) => s.pointsFC);
+  const linesFC = useDroneStore((s) => s.linesFC);
+
+  // 1. إنشاء الخريطة مرة وحدة
+  useEffect(() => {
+    if (map.current) return;
+
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: "https://demotiles.maplibre.org/style.json",
+      center: [35.9, 31.95], // وسط عمان مثلاً
+      zoom: 6,
+    });
+
+    map.current.on("load", () => {
+      // نقاط الطائرات
+      map.current.addSource("drones", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.current.addLayer({
+        id: "drones-layer",
+        type: "circle",
+        source: "drones",
+        paint: {
+          "circle-radius": 6,
+          "circle-color": [
+            "case",
+            ["get", "allowed"], // مباشرة استخدم الخاصية التي حسبناها مسبقاً
+            "#00ff00", // أخضر = مسموح
+            "#ff0000", // أحمر = غير مسموح
+          ],
+        },
+      });
+
+      // خطوط (المسارات)
+      map.current.addSource("drone-lines", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.current.addLayer({
+        id: "lines-layer",
+        type: "line",
+        source: "drone-lines",
+        paint: {
+          "line-color": "#0000ff",
+          "line-width": 2,
+        },
+      });
+    });
+  }, []);
+
+  // 2. تحديث النقاط عند تغير pointsFC
+  useEffect(() => {
+    if (!map.current) return;
+    if (!map.current.getSource("drones")) return;
+    map.current.getSource("drones").setData(pointsFC);
+    console.log("✅ Updated drones on map:", pointsFC);
+  }, [pointsFC]);
+
+  // 3. تحديث الخطوط عند تغير linesFC
+  useEffect(() => {
+    if (!map.current) return;
+    if (!map.current.getSource("drone-lines")) return;
+    map.current.getSource("drone-lines").setData(linesFC);
+    console.log("✅ Updated lines on map:", linesFC);
+  }, [linesFC]);
+
+  return <div ref={mapContainer} style={{ width: "100%", height: "100vh" }} />;
 }
