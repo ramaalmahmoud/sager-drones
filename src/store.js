@@ -108,6 +108,12 @@ export const useDroneStore = create((set, get) => ({
   pointsFC: { type: "FeatureCollection", features: [] }, // مواقع الطائرات الحالية
   linesFC: { type: "FeatureCollection", features: [] }, // مسارات الطائرات
 
+  // ✅ عداد الطائرات الحمراء (غير المسموح إلها)
+  redCount: () => {
+    return get().pointsFC.features.filter((f) => f.properties.allowed === false)
+      .length;
+  },
+
   // إدخال/تحديث ميزات جديدة قادمة من السيرفر
   upsertFeatures: (features) => {
     const map = new Map(get().dronesById);

@@ -2,15 +2,42 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  width: 200px;
+  width: 250px;
   max-height: 80vh;
   overflow-y: auto;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 10px;
-  z-index: 10; /* فوق الخريطة */
+  background-color: #1e1e1e;
+  color: #fff;
+  border-radius: 8px;
   font-family: Arial, sans-serif;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.drone-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  font-weight: bold;
+  border-bottom: 1px solid #333;
+  font-size: 1rem;
+}
+
+.close-btn {
+  cursor: pointer;
+}
+
+.drone-list-tabs {
+  display: flex;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #333;
+  font-size: 0.9rem;
+}
+
+.drone-list-tabs .active-tab {
+  font-weight: bold;
+  border-bottom: 2px solid #fff;
 }
 
 .drone-list ul {
@@ -20,9 +47,21 @@
 }
 
 .drone-list li {
-  padding: 5px;
+  padding: 10px;
+  margin: 0;
+  border-bottom: 1px solid #333;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+.drone-list li:hover {
+  background-color: #333;
+}
+
+.drone-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .drone-name {
@@ -30,16 +69,17 @@
 }
 
 .drone-reg {
-  font-size: 0.85em;
-  color: gray;
-  font-style: italic;
+  font-size: 0.8rem;
+  color: #ccc;
 }
 
-/* الألوان حسب حالة الطيران */
+/* Status colors */
 .green {
-  color: green;
+  border-left: 4px solid green;
+  padding-left: 6px;
 }
 
 .red {
-  color: red;
+  border-left: 4px solid red;
+  padding-left: 6px;
 }
