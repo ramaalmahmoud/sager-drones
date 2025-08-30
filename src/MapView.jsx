@@ -457,6 +457,7 @@ import React, { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useDroneStore } from "./store";
+import DroneList from "./components/DroneList";
 
 function DroneCounter({ pointsFC }) {
   const redCount = pointsFC.features.filter(
@@ -521,6 +522,8 @@ export default function MapView() {
           ],
           "icon-size": 0.08,
           "icon-allow-overlap": true,
+              "icon-rotate": ["get", "yaw"], 
+
         },
       });
 
@@ -580,10 +583,27 @@ export default function MapView() {
       map.current.getSource("drone-lines").setData(linesFC);
   }, [pointsFC]);
 
-  return (
-    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
-      <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
-      <DroneCounter pointsFC={pointsFC} />
+return (
+  <div style={{ width: "100%", height: "100vh", position: "relative" }}>
+    <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
+
+    {/* Drone Counter (أسفل يمين) */}
+    <DroneCounter pointsFC={pointsFC} />
+
+    {/* Drone List (أعلى يمين) */}
+    <div style={{ position: "absolute", top: "10px", right: "10px", zIndex: 50 }}>
+      <DroneList
+        onSelectDrone={(drone) => {
+          const [lng, lat] = drone.geometry.coordinates;
+          map.current.flyTo({
+            center: [lng, lat],
+            zoom: 15,
+            essential: true,
+          });
+        }}
+      />
     </div>
-  );
+  </div>
+);
+
 }
